@@ -1,0 +1,11 @@
+1.添加spring-boot-devtools依赖
+    <dependency>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-devtools</artifactId>
+       <!-- 为了防止将 devtools传递到其他模块 打包运行后，devtools会自动禁用-->
+       <optional>true</optional>
+    </dependency>
+2.如果开发工具是idea  点击file->settings->Build,Execution,Deployment->Compile->勾选Build project automatically
+       按住ctrl+shift+alt+/  -> Registry -> 勾选 compiler.automake.allow.when.app.running
+
+spring.devtools.restart.enabled=false  禁用devtools

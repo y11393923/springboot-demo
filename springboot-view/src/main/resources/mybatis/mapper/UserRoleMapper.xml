@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyy.mapper.UserRoleMapper">
+
+    <insert id="addUserRole" parameterType="com.zyy.entity.UserRole">
+        INSERT INTO `user_role` set user_id=#{userId},role_id=#{roleId},created_time=#{createTime}
+    </insert>
+
+</mapper>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+</head>
+<body>
+<form method="post" id="form">
+    <p>用户名：<input name="userName" id="username" type="text"/></p>
+    <p>密码：<input name="password" id="password" type="password"/></p>
+    <button type="button" id="loginButton">登录</button>
+</form>
+<script src="https://static-cdn.cocosurprise.com/js/jQuery/1.10.2/jquery.min.js"></script>
+<script>
+    $(function () {
+        $("#loginButton").click(function () {
+            $.ajax({
+                url: "/login",
+                type: "post",
+                data: {"userName":$("#username").val(),"password":$("#password").val()},
+                success: function (data) {
+                    alert(data.message);
+                }
+            })
+        })
+
+    })
+</script>
+</body>
+</html>

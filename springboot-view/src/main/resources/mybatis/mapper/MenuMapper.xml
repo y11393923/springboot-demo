@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.zyy.mapper.MenuMapper">
+	<resultMap id="BaseResultMap" type="com.zyy.entity.Menu">
+		<id column="id" property="id" jdbcType="INTEGER"/>
+		<result column="url" property="url" jdbcType="VARCHAR"/>
+		<result column="name" property="name" jdbcType="VARCHAR"/>
+		<result column="icon" property="icon" jdbcType="VARCHAR"/>
+		<result column="parentId" property="parentId" jdbcType="INTEGER"/>
+		<collection property="roles" ofType="com.zyy.entity.Role">
+			<id column="rid" property="id"/>
+			<result column="rname" property="name"/>
+			<result column="rnameRemark" property="nameRemark"/>
+			<result column="rstatus" property="status"/>
+		</collection>
+	</resultMap>
+
+    <select id="getMenusByUserId" resultType="com.zyy.entity.Menu">
+			SELECT
+				m.*
+			FROM
+				( SELECT * FROM USER ) u
+				INNER JOIN ( SELECT * FROM user_role ) ur ON u.id = ur.user_id AND u.id = #{userId}
+				INNER JOIN ( SELECT * FROM role ) r ON r.id = ur.role_id
+				INNER JOIN ( SELECT * FROM role_menu ) rm ON rm.role_id = r.id
+				INNER JOIN ( SELECT * FROM menu ) m ON rm.menu_id = m.id
+	</select>
+
+	<select id="getAllMenu" resultMap="BaseResultMap">
+		select m.*,r.`id` as rid,r.`name` as rname,r.`name_remark` as nameRemark
+		from menu m
+			left join role_menu mr on m.`id`=mr.`menu_id`
+			left join role r on mr.`role_id`=r.`id`
+		WHERE m.`status`=1 order by m.`id` desc
+	</select>
+
+
+</mapper>

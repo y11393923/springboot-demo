@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>this is hello world</title>
+</head>
+<body>
+    <img src="../images/Koala.jpg" width="200px" height="200px">
+    <table border=” 1” >
+        <tr>
+            <td>用户编号</td>
+            <td>用户名称</td>
+            <td>用户性别</td>
+        </tr>
+        <tr th:each="user:${userList}">
+            <td th:text="${user.id}"></td>
+            <td th:text="${user.userName}"></td>
+            <td th:if="${user.sex==1}">男</td>
+            <td th:if="${user.sex==2}">女</td>
+        </tr>
+    </table>
+</body>
+</html>

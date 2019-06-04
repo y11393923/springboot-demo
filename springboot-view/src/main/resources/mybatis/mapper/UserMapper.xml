@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zyy.mapper.UserMapper">
+    <resultMap id="userParam" type="com.zyy.entity.User">
+        <id property="id" column="id"/>
+        <result property="username" column="username"/>
+        <result property="password" column="password"/>
+        <result property="nickname" column="nikename"/>
+        <result property="admin" column="admin"/>
+        <result property="createDate" column="create_date"/>
+        <collection property="roles" ofType="com.zyy.entity.Role">
+            <id column="rid" property="id"/>
+            <result column="rname" property="name"/>
+            <result column="rnameRemark" property="nameRemark"/>
+            <result column="rstatus" property="status"/>
+        </collection>
+    </resultMap>
+    <insert id="addUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.zyy.entity.User">
+        INSERT INTO `user` set username=#{username},password=#{password},nickname=#{nickname},create_date=#{createDate}
+    </insert>
+    <select id="findAll" resultMap="userParam">
+        select * from `user`
+    </select>
+    <select id="loadUserByUsername" resultMap="userParam">
+        select u.*,r.id rid,r.name rname,r.name_remark rnameRemark from `user` u inner join user_role ur on ur.user_id=u.id inner join role r on r.id=ur.role_id where username=#{username}
+    </select>
+</mapper>
