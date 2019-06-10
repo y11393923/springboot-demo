@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+        <meta name="author" content="order by dede58.com"/>
+		<title>权限控制页面</title>
+	</head>
+	<body>
+		<div style="width:300px; height:100px;margin-left: 380px;margin-top: 100px;">
+			<table border="1" cellspacing="0" cellpadding="0" bgcolor="#f0f8ff">
+				<tr>
+					<td align="center" colspan="2"><input type="button" id="add" value="添   加" style="width: 100px;background-color: green"></td>
+					<td align="center" colspan="2"><input type="button" id="select" value="查   询" style="width: 100px;background-color: green"></td>
+					<td align="center" colspan="2"><input type="button" id="update" value="更   新" style="width: 100px;background-color: green"></td>
+					<td align="center" colspan="2"><input type="button" id="delete" value="删   除" style="width: 100px;background-color: red"></td>
+					<td align="center" colspan="2"><input type="button" id="logout" value="退   出" style="width: 100px;background-color: cornflowerblue"></td>
+				</tr>
+			</table>
+		</div>
+	</body>
+	<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+	<script type="text/javascript">
+		//给添加按钮绑定点击事件
+		$("#add").click(function () {
+			location.href="add-success.html";
+        });
+        //给查询按钮绑定点击事件
+        $("#select").click(function () {
+            location.href="select-success.html";
+        });
+        //给更新按钮绑定点击事件
+        $("#update").click(function () {
+            location.href="update-success.html";
+        });
+        //给删除按钮绑定点击事件
+        $("#delete").click(function () {
+            location.href="delete-success.html";
+        });
+        //给退出组按钮绑定点击事件
+        $("#logout").click(function () {
+            //发送ajax请求后台的logout方法
+            $.ajax({
+                url:'/logout',//请求路径
+                type:'put',//请求方式
+                dataType:'json',
+                statusCode : {
+                    200 : function(){
+                        //退出之后跳到index页
+                        window.location.href="/index.html";
+                    }
+                }
+            });
+        });
+
+	</script>
+</html>

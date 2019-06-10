@@ -1,0 +1,11 @@
+#Tomcat
+server:
+  port: 8088 #端口号
+
+#DB configuration mysql配置信息
+spring:
+  datasource:
+   driverClassName: com.mysql.jdbc.Driver #mysql驱动
+   url: jdbc:mysql://127.0.0.1:3306/shiro_demo?useUnicode=true&characterEncoding=utf8
+   username: root #mysql用户名
+   password: root #mysql密码

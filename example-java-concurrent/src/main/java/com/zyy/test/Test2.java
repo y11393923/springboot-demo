@@ -1,5 +1,8 @@
 package com.zyy.test;
 
+import org.springframework.beans.BeanUtils;
+import org.springframework.util.Assert;
+
 /**
  * @Author:zhouyuyang
  * @Description:
@@ -10,5 +13,7 @@ public class Test2 {
         int pageNumber=3;
         pageNumber = (pageNumber - 1 ) / 10 + 1;
         System.out.println(pageNumber);
+
+        Assert.notNull(null, "objects cannot be empty");
     }
 }

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+        <meta name="author" content="order by dede58.com"/>
+		<title>shiro认证页面</title>
+
+	</head>
+	<body>
+		<div style="width:300px; height:100px;margin-left: 480px;margin-top: 100px;">
+			<form id="loginForm">
+			<table border="1" cellspacing="0" cellpadding="0" bgcolor="#f0f8ff">
+				<tr>
+					<td align="center" colspan="2">用户登录</td>
+				</tr>
+				<tr>
+					<td align="right">用户名：</td>
+					<td align="left"><input type="text" name="username"></td>
+				</tr>
+				<tr>
+					<td align="right">密码：</td>
+					<td align="left"><input type="text" name="password"></td>
+				</tr>
+				<tr>
+					<td align="center" colspan="2"><input type="button" id="loginBtn" value="登   录" style="width: 100px;background-color: green"></td>
+				</tr>
+			</table>
+			</form>
+		</div>
+		<script type="text/javascript" src="js/jquery-1.8.3.js"></script>
+		<script  type="text/javascript">
+			//给登录按钮添加点击事件
+                $("#loginBtn").click(function(){
+                    //获取表单信息
+                    var formValues = $("#loginForm").serialize();
+                    //发送ajax请求后台的login方法
+                    $.ajax({
+                        url:'/login',//请求路径
+                        type:'get',//请求方式
+                        data:formValues,//请求参数
+                        dataType:'json',
+                        statusCode : {
+                            200 : function(){
+                                //登录成功之后跳到button页
+                                window.location.href="/button.html";
+                            }
+                        }
+                    });
+                });
+		</script>
+	</body>
+</html>
