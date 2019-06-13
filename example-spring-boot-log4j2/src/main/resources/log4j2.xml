@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Properties>
+        <Property name="PID">????</Property>
+        <Property name="LOG_PATTERN">[%d{yyyy-MM-dd HH:mm:ss.SSS}]
+            log4j2%X{context} - ${sys:PID} %5p [%t] --- %c{1}: %m%n
+        </Property>
+    </Properties>
+    <Appenders>
+
+        <RollingFile name="RollingFile" fileName="logs/demo.log"
+                     filePattern="logs/app-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="DENY"/>
+            </Filters>
+            <Policies>
+                <TimeBasedTriggeringPolicy modulate="true" interval="1" />
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs" maxDepth="2">
+                    <IfFileName glob="app-*.log.gz" />
+                    <IfLastModified age="7d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+
+        </RollingFile>
+        <RollingFile name="RollingFile1" fileName="logs/demo_2.log"
+                     filePattern="logs/search-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+            <PatternLayout>
+                <Pattern>%d %p %c{1.} [%t] %m%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="info" onMatch="DENY" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="debug" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+            </Filters>
+            <TimeBasedTriggeringPolicy/>
+        </RollingFile>
+
+        <!-- <RollingFile name="RollingFile2" fileName="logs/interfaceRecord.log"
+                    filePattern="logs/interface-%d{MM-dd-yyyy}.log.gz" ignoreExceptions="false">
+           <PatternLayout>
+               <Pattern>%d %m%n</Pattern>
+           </PatternLayout>
+           <Filters>
+               <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+               <ThresholdFilter level="debug" onMatch="DENY" onMismatch="NEUTRAL"/>
+             </Filters>
+           <TimeBasedTriggeringPolicy/>
+       </RollingFile> -->
+
+        <RollingFile name="RollingFile2" fileName="logs/demo_3.log"
+                     filePattern="log/$${date:yyyy-MM}/interface-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout>
+                <Pattern>%d %m%n</Pattern>
+            </PatternLayout>
+            <Filters>
+                <ThresholdFilter level="info" onMatch="ACCEPT" onMismatch="NEUTRAL"/>
+                <ThresholdFilter level="debug" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <!-- <SizeBasedTriggeringPolicy size="50MB"/> -->
+            <SizeBasedTriggeringPolicy size="2KB"/>
+            <DefaultRolloverStrategy max="2"/>
+        </RollingFile>
+
+        <Console name="STDOUT" target="SYSTEM_OUT" ignoreExceptions="false">
+            <ThresholdFilter level="trace" onMatch="ACCEPT" onMismatch="DENY"/>
+            <PatternLayout pattern="%d %p %c{1.} [%t] %m%n"/>
+        </Console>
+
+
+    </Appenders>
+
+
+    <Loggers>
+        <Root level="debug">
+            <AppenderRef ref="RollingFile"/>
+            <AppenderRef ref="RollingFile1"/>
+            <AppenderRef ref="STDOUT"/>
+        </Root>
+    </Loggers>
+</Configuration>
