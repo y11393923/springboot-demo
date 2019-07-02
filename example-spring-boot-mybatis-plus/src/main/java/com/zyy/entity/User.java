@@ -1,5 +1,7 @@
 package com.zyy.entity;
 
+import com.baomidou.mybatisplus.annotation.Version;
+
 import java.io.Serializable;
 
 /**
@@ -11,6 +13,8 @@ public class User implements Serializable {
     private Long id;
     private String userName;
     private String password;
+    @Version
+    private Integer version;
 
     public Long getId() {
         return id;
@@ -36,12 +40,21 @@ public class User implements Serializable {
         this.password = password;
     }
 
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     @Override
     public String toString() {
         return "User{" +
                 "id=" + id +
                 ", userName='" + userName + '\'' +
                 ", password='" + password + '\'' +
+                ", version=" + version +
                 '}';
     }
 }

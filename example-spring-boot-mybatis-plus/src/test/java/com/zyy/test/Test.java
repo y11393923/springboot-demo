@@ -22,8 +22,8 @@ public class Test {
     private UserMapper userMapper;
 
     @org.junit.Test
-    public void test(){
-        Page<User> page = new Page<>(1,2);
+    public void testSelect(){
+        Page<User> page = new Page<>(2,2);
         List<User> userList = userMapper.selectAll(page);
         page.setRecords(userList);
         System.out.println(userList.size());
@@ -32,5 +32,13 @@ public class Test {
         for (User user:userList) {
             System.out.println(user.toString());
         }
+    }
+    @org.junit.Test
+    public void testUpdate(){
+        User user = userMapper.selectById(1);
+        System.out.println(user.toString());
+        user.setUserName("王五");
+        userMapper.updateById(user);
+        System.out.println(user.toString());
     }
 }
