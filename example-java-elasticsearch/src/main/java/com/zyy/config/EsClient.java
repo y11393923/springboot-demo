@@ -9,7 +9,7 @@ import java.net.InetAddress;
 
 public class EsClient {
     private static final String clusterName = "elasticsearch";
-    private static final String clusterAddress = "10.111.32.79:10229";
+    private static final String clusterAddress = "10.111.32.76:10229";
     private TransportClient client;
     private static volatile EsClient esClient;
 

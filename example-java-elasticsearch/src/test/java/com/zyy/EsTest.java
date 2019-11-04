@@ -1,21 +1,40 @@
 package com.zyy;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
 import com.zyy.bean.Detect;
+import com.zyy.config.EsClient;
 import com.zyy.utils.EsUtil;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.index.query.BoolQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
+import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
+import org.elasticsearch.search.aggregations.bucket.histogram.ExtendedBounds;
+import org.elasticsearch.search.aggregations.bucket.histogram.Histogram;
 import org.elasticsearch.search.aggregations.bucket.terms.StringTerms;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilder;
+import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
+import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
+import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public class EsTest {
@@ -72,6 +91,46 @@ public class EsTest {
         List<Detect> detects = EsUtil.queryPage("detect_index", "history", Detect.class);
         detects.forEach(detect -> System.out.println(detect.toString()));
     }
+
+
+    /**
+     * 深分页
+     */
+    @Test
+    public void scrollPages(){
+        SearchResponse searchResponse = EsClient.getClient().prepareSearch("detect_index")
+                .setTypes("history")
+                .setQuery(QueryBuilders.termQuery("taskId",8))
+                .addSort("receivedTime", SortOrder.DESC)
+                .setSize(10)
+                .setScroll(new TimeValue(1000))
+                .get();
+        //获取总数量
+        long totalCount = searchResponse.getHits().getTotalHits();
+        //计算总页数
+        int totalPage = totalCount % 10 == 0 ? (int)totalCount / 10 : ((int)totalCount / 10) + 1;
+
+        System.out.println("总数据：" + totalCount + "----------页数：" + totalPage);
+        System.out.println("----------当前页：" + 1 + "-----------------");
+        for (SearchHit hit:searchResponse.getHits()) {
+            System.out.println( hit.getSourceAsMap().get("receivedTime") + "---" + hit.getSourceAsString());
+        }
+
+        for (int i = 2; i <= totalPage ;i++){
+            System.out.println("----------当前页：" + i + "-----------------");
+            searchResponse = EsClient.getClient()
+                    //再次发送请求,并使用上次搜索结果的ScrollId
+                    .prepareSearchScroll(searchResponse.getScrollId())
+                    .setScroll(new TimeValue(1000)).get();
+
+            SearchHits hits = searchResponse.getHits();
+            for (SearchHit hit:hits) {
+                System.out.println( hit.getSourceAsMap().get("receivedTime") + "---" + hit.getSourceAsString());
+            }
+        }
+
+    }
+
 
     @Test
     public void queryByCondition(){
@@ -145,6 +204,140 @@ public class EsTest {
                 });
             });
         });
+    }
+
+
+    /**
+     * 根据时间聚合
+     */
+    @Test
+    public void queryByDateAggregation() throws ParseException {
+        // 根据日期聚合
+        DateHistogramAggregationBuilder field = AggregationBuilders.dateHistogram("alarmCount").field("receivedTime")
+                .subAggregation(AggregationBuilders.cardinality("countEventId").field("eventId.keyword"));
+        field.dateHistogramInterval(DateHistogramInterval.DAY);
+        // 指定东八时区
+        field.timeZone(DateTimeZone.forID("Asia/Shanghai"));
+        // 格式化日期
+        field.format("yyyy-MM-dd");
+        // 只返回文档数量DocCount 大于50000的
+        field.minDocCount(50000);
+        // 指定时间间隔 不在查询范围内会补0
+        field.extendedBounds(new ExtendedBounds("2019-10-20", "2019-10-25"));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        //只查询 26 - 30 之间的数据
+        boolQueryBuilder.must(QueryBuilders.rangeQuery("receivedTime").from(sdf.parse("2019-10-26 00:00:00").getTime())
+                .to(sdf.parse("2019-10-31 00:00:00").getTime()).includeLower(true).includeUpper(false));
+
+        SearchRequestBuilder searchRequestBuilder = EsClient.getClient().prepareSearch("detect_index")
+                .setTypes("history")
+                .setQuery(boolQueryBuilder)
+                .addAggregation(field)
+                .setSize(0);
+
+        SearchResponse searchResponse = searchRequestBuilder.get();
+        // date -> count : yyyy-MM-dd -> num
+        Map<String, Long> alarmCount = new LinkedHashMap<>();
+        if (searchResponse.status() == RestStatus.OK){
+            Histogram histogram = searchResponse.getAggregations().get("alarmCount");
+            // 获取date -> alarmNum 的 集合
+            for (Histogram.Bucket entry : histogram.getBuckets()) {
+                Cardinality value = entry.getAggregations().get("countEventId");
+                // 每天的日期，yyyy-MM-dd
+                String date = entry.getKeyAsString();
+                // eventId count
+                long alarmNum = value.getValue();
+                long docCount = entry.getDocCount();
+                alarmCount.put(date, alarmNum);
+            }
+        }
+        alarmCount.forEach((key, value) -> System.out.println(key + "-" + value));
+    }
+
+    @Test
+    public void queryByMaxAggregation(){
+        // date -> alarmTime
+        Map<String, Long> alarmDuaration = new LinkedHashMap();
+        DateHistogramAggregationBuilder field = AggregationBuilders.dateHistogram("alarmDuration").field("receivedTime")
+                // 根据eventId聚合
+                .subAggregation(AggregationBuilders.terms("groupByEventId").field("eventId.keyword").size(10000)
+                        // 拿eventTime的最大值即每个任务的时间
+                        .subAggregation(AggregationBuilders.max("maxEventTime").field("eventTime")));
+
+        field.dateHistogramInterval(DateHistogramInterval.DAY);
+        // 指定东八时区
+        field.timeZone(DateTimeZone.forID("Asia/Shanghai"));
+        // 格式化日期
+        field.format("yyyy-MM-dd");
+
+        SearchRequestBuilder searchRequestBuilder = EsClient.getClient().prepareSearch("detect_index")
+                .setTypes("history")
+                .addAggregation(field)
+                .setSize(0);
+
+        SearchResponse response = searchRequestBuilder.execute().actionGet();
+
+        Histogram histogram = response.getAggregations().get("alarmDuration");
+
+        for (Histogram.Bucket entry : histogram.getBuckets()) {
+            double score = 0;
+            // 得到每个eventId的bucket
+            Terms groupByEventId = entry.getAggregations().get("groupByEventId");
+            for (Terms.Bucket bucketMax : groupByEventId.getBuckets()) {
+                // 拿最大的eventTime
+                Max eventTime = bucketMax.getAggregations().get("maxEventTime");
+                score += eventTime.getValue();
+            }
+            String date = entry.getKeyAsString();
+            Long count = new Double(score).longValue();
+            alarmDuaration.put(date, count);
+        }
+
+        alarmDuaration.forEach((key, value) -> System.out.println(key + "-" + value));
+    }
+
+    /**
+     * 日期转换
+     */
+    @Test
+    public void testDate(){
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        System.out.println("当前时间转换" + localDateTime.format(formatter));
+
+        LocalDateTime dateTime = LocalDateTime.parse("2019-10-30 10:00:00", formatter);
+        System.out.println(dateTime.format(formatter));
+
+    }
+
+
+    @Test
+    public void sss(){
+        TermsAggregationBuilder aggregationBuilder = AggregationBuilders.terms("taskId").field("taskId.keyword")
+                .subAggregation(AggregationBuilders.cardinality("alarmCount").field("eventId.keyword")).size(10000);
+        BoolQueryBuilder builder = QueryBuilders.boolQuery();
+        builder.must(QueryBuilders.termsQuery("taskId.keyword",new Integer[]{1,2}));
+        builder.must(QueryBuilders.existsQuery("eventId.keyword"));
+        builder.must(QueryBuilders.termQuery("isAlarm", "1"));
+        builder.must(QueryBuilders.termQuery("platform.keyword", "SCA"));
+        SearchResponse searchResponse = EsClient.getClient()
+                .prepareSearch("detect")
+                .setTypes("history")
+                .setQuery(builder)
+                .addAggregation(aggregationBuilder)
+                .get();
+        Map<Long, Long> taskAlarmMap = new HashMap();
+        Terms terms = searchResponse.getAggregations().get("taskId");
+        Iterator<? extends Terms.Bucket> iterator = terms.getBuckets().iterator();
+        while (iterator.hasNext()){
+            Terms.Bucket bucket = iterator.next();
+            Cardinality cardinality = bucket.getAggregations().get("alarmCount");
+            long alarmCount = cardinality.getValue();
+            taskAlarmMap.put(Long.parseLong(bucket.getKey().toString()), alarmCount);
+        }
+        System.out.println(taskAlarmMap);
     }
 
 }

@@ -336,7 +336,7 @@ public class EsUtil {
         if (Objects.nonNull(conditions)){
             boolQueryBuilder = QueryBuilders.boolQuery();
             for (Map.Entry<String, Object> entry:conditions.entrySet()){
-                //如果是数组或者集合需要用termsQuery方法，必须强转不能直接使用value否则查询不出来
+                //如果是数组或者集合需要用termsQuery方法，因为是map拿出来必须强转不能直接使用value否则查询不出来
                 if (entry.getValue().getClass().isArray()){
                     boolQueryBuilder.must(QueryBuilders.termsQuery(entry.getKey(), (Object[])entry.getValue()));
                 }else if(entry.getValue() instanceof Collection){
