@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.zyy.bean.Detect;
 import com.zyy.config.EsClient;
 import com.zyy.utils.EsUtil;
+import org.elasticsearch.action.admin.cluster.stats.ClusterStatsNodes;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.common.unit.TimeValue;
@@ -13,6 +14,7 @@ import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramAggregationBuilder;
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval;
@@ -24,6 +26,7 @@ import org.elasticsearch.search.aggregations.bucket.terms.TermsAggregationBuilde
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality;
 import org.elasticsearch.search.aggregations.metrics.max.Max;
 import org.elasticsearch.search.aggregations.metrics.tophits.InternalTopHits;
+import org.elasticsearch.search.aggregations.metrics.valuecount.InternalValueCount;
 import org.elasticsearch.search.sort.SortBuilder;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
@@ -31,11 +34,16 @@ import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class EsTest {
     @Test
@@ -221,7 +229,7 @@ public class EsTest {
         // 格式化日期
         field.format("yyyy-MM-dd");
         // 只返回文档数量DocCount 大于50000的
-        field.minDocCount(50000);
+        //field.minDocCount(10000);
         // 指定时间间隔 不在查询范围内会补0
         field.extendedBounds(new ExtendedBounds("2019-10-20", "2019-10-25"));
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
@@ -245,6 +253,40 @@ public class EsTest {
             // 获取date -> alarmNum 的 集合
             for (Histogram.Bucket entry : histogram.getBuckets()) {
                 Cardinality value = entry.getAggregations().get("countEventId");
+                // 每天的日期，yyyy-MM-dd
+                String date = entry.getKeyAsString();
+                // eventId count
+                long alarmNum = value.getValue();
+                long docCount = entry.getDocCount();
+                alarmCount.put(date, alarmNum);
+            }
+        }
+        alarmCount.forEach((key, value) -> System.out.println(key + "-" + value));
+    }
+
+    /**
+     * 根据时间聚合
+     */
+    @Test
+    public void queryByDateAggregation2() throws ParseException {
+        AggregationBuilder field = AggregationBuilders.terms("alarmCount").field("camera.serial.keyword")
+                .subAggregation(AggregationBuilders.count("countEventId").field("eventId.keyword"));
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery();
+
+        SearchRequestBuilder searchRequestBuilder = EsClient.getClient().prepareSearch("detect_index")
+                .setTypes("history")
+                .setQuery(boolQueryBuilder)
+                .addAggregation(field)
+                .setSize(0);
+
+        SearchResponse searchResponse = searchRequestBuilder.get();
+        // date -> count : yyyy-MM-dd -> num
+        Map<String, Long> alarmCount = new LinkedHashMap<>();
+        if (searchResponse.status() == RestStatus.OK){
+            StringTerms stringTerms = searchResponse.getAggregations().get("alarmCount");
+            // 获取date -> alarmNum 的 集合
+            for (Terms.Bucket entry : stringTerms.getBuckets()) {
+                InternalValueCount value = entry.getAggregations().get("countEventId");
                 // 每天的日期，yyyy-MM-dd
                 String date = entry.getKeyAsString();
                 // eventId count
@@ -309,6 +351,15 @@ public class EsTest {
 
         LocalDateTime dateTime = LocalDateTime.parse("2019-10-30 10:00:00", formatter);
         System.out.println(dateTime.format(formatter));
+
+
+        System.out.println(Instant.now().atOffset(ZoneOffset.ofHours(8)).toEpochSecond() == System.currentTimeMillis()/ 1000);
+        System.out.println(Instant.now(Clock.systemDefaultZone()).getEpochSecond());
+        System.out.println(System.currentTimeMillis()/ 1000);
+
+        Instant instant = Instant.ofEpochMilli(Instant.now(Clock.systemDefaultZone()).toEpochMilli());
+        System.out.println(instant.getEpochSecond());
+
 
     }
 
