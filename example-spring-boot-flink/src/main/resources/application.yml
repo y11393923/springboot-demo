@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    username: root
+    password: ENC(egcxqaMeNuzD0I3jVPytQA==)
+    url: jdbc:mysql://localhost:3306/test?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+jasypt:
+  encryptor:
+    password: whaleleader
+mybatis:
+  mapper-locations: classpath:mapper/*Mapper.xml
+  type-aliases-package: com.zyy.entity
+server:
+  port: 18080
+kafka:
+  consumer:
+    bootstrapServers: 10.111.32.74:10209
+    groupId: student-group
+    topics:
+      - WhaleCrowdCollect
+    enableAutoCommit: false
+    autoCommitInterval: 100
+    sessionTimeOut: 15000
+    autoOffsetReset: latest
+    pollTimeOut: 1000
