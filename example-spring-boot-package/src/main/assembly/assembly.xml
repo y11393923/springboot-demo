@@ -35,6 +35,7 @@
             <lineEnding>unix</lineEnding>
             <directory>src/main/scripts</directory>
             <outputDirectory>/</outputDirectory>
+            <fileMode>0755</fileMode> <!--修改权限 -->
             <includes>
                 <include>*.*</include>
             </includes>

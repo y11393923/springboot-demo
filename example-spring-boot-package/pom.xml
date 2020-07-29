@@ -83,6 +83,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId><!--执行器 mvn assembly:assembly -->
+                <version>3.3.0</version>
                 <configuration>
                     <descriptors> <!--描述文件路径 -->
                         <descriptor>src/main/assembly/assembly.xml</descriptor>
