@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.zyy</groupId>
+    <artifactId>example-java-remote-procedure-call</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>example-provider</module>
+        <module>example-consumer</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- jdk version -->
+        <java.version>1.8</java.version>
+        <!-- jdk version -->
+        <java.source.version>1.8</java.source.version>
+        <java.target.version>1.8</java.target.version>
+        <!-- file encoding -->
+        <file.encoding>${project.build.sourceEncoding}</file.encoding>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <!-- 设置javac编译器的版本和编码字符 -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <encoding>utf8</encoding><!-- 编译器编码 -->
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
