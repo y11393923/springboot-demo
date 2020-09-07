@@ -3,15 +3,15 @@ server:
 spring:
   datasource:
     driver-class-name: oracle.jdbc.driver.OracleDriver
-    url: jdbc:oracle:thin:@10.151.3.169:1521:HELOWIN
-    username: sensetime
-    password: SenseTime2018wd
+    url: jdbc:oracle:thin:@10.111.32.119:1521/helowinXDB
+    username: test
+    password: test
 mybatis:
   mapper-locations: classpath*:mapper/*.xml
-  #\u914D\u7F6E\u522B\u540D\u5305\u8DEF\u5F84
+  #配置别名包路径
   type-aliases-package: com.example.entity
   configuration:
-    #\u65E5\u5FD7\u6253\u5370
+    #日志打印
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
-    #\u5F00\u542F\u9A7C\u5CF0\u8F6C\u6362
+    #开启驼峰转换
     map-underscore-to-camel-case: true

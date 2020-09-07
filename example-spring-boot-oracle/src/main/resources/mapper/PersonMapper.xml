@@ -3,8 +3,33 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.mapper.PersonMapper">
+    <insert id="insert">
+        insert into PERSON(PID, NAME, GENDER, BIRTHDAY)
+        values(#{person.pid}, #{person.name}, #{person.gender}, #{person.birthday})
+    </insert>
+
+    <update id="update">
+        update PERSON set
+        NAME = #{person.name},
+        GENDER = #{person.gender},
+        BIRTHDAY = #{person.birthday}
+        where PID = #{person.pid}
+    </update>
+
+    <delete id="delete">
+        delete from PERSON where PID = #{pid}
+    </delete>
 
     <select id="selectAll" resultType="com.example.entity.Person">
         select * from PERSON
+    </select>
+
+    <select id="findOne" resultType="com.example.entity.Person">
+        select * from PERSON where PID = #{pid}
+    </select>
+
+    <select id="selectAllByPage" resultType="com.example.entity.Person">
+        select * FROM (select * from (select p.*, rownum num from PERSON p)
+        where num &lt;= #{offset} * #{limit}) where num > (#{offset} - 1) * #{limit}
     </select>
 </mapper>

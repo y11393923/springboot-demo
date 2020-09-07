@@ -7,16 +7,16 @@ import java.util.Date;
  * @Date: 2020/8/28 11:02
  */
 public class Person {
-    private Long pid;
+    private Integer pid;
     private String name;
     private Integer gender;
     private Date birthday;
 
-    public Long getPid() {
+    public Integer getPid() {
         return pid;
     }
 
-    public void setPid(Long pid) {
+    public void setPid(Integer pid) {
         this.pid = pid;
     }
 
