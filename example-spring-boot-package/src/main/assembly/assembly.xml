@@ -34,7 +34,7 @@
         <fileSet>
             <lineEnding>unix</lineEnding>
             <directory>src/main/scripts</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory>${file.separator}</outputDirectory>
             <fileMode>0755</fileMode> <!--修改权限 -->
             <includes>
                 <include>*.*</include>
@@ -42,6 +42,13 @@
             <excludes>
                 <exclude>*.sql</exclude>
             </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>src</directory>
+            <outputDirectory>${file.separator}</outputDirectory>
+            <includes>
+                <include>Dockerfile</include>
+            </includes>
         </fileSet>
     </fileSets>
     <dependencySets>
