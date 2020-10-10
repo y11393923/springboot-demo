@@ -1,6 +1,7 @@
 package com.example.util;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Author: zhouyuyang
@@ -40,13 +41,15 @@ public class PolygonUtil {
     public static boolean isPointInPolygon(List<Vertex> vertexes, Vertex target) {
 
         int intersectCount = 0;
-        double precision = 5;  //浮点类型计算时候与0比较时候的容差
+        //浮点类型计算时候与0比较时候的容差
+        double precision = 5;
         Vertex v1, v2;
 
         int N = vertexes.size();
         v1 = vertexes.get(0);
         for (int i = 1; i <= N; i++) {
-            if (target.equals(v1)) {  // 目标点刚好在顶点上
+            // 目标点刚好在顶点上
+            if (target.equals(v1)) {
                 return true;
             }
 
@@ -76,7 +79,8 @@ public class PolygonUtil {
                         Double v2x = v2.getX();
                         Double v2y = v2.getY();
                         double ty = (target.getX() - v1x) * (v2y - v1y) / (v2x - v1x) + v1y;
-                        if (Math.abs(target.getY() - ty) < precision) return true; // 在斜线附近,近似看成在斜线上，返回true
+                        // 在斜线附近,近似看成在斜线上，返回true
+                        if (Math.abs(target.getY() - ty) < precision) return true;
                         if (target.getY() < ty) intersectCount++;
                     }
                 }
@@ -114,6 +118,20 @@ public class PolygonUtil {
 
         public void setY(double y) {
             this.y = y;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (this == object) return true;
+            if (object == null || getClass() != object.getClass()) return false;
+            Vertex vertex = (Vertex) object;
+            return Double.compare(vertex.getX(), getX()) == 0 &&
+                    Double.compare(vertex.getY(), getY()) == 0;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getX(), getY());
         }
     }
 }
