@@ -58,7 +58,11 @@
                     </from>
                     <to>
                         <!--镜像名称和tag，使用了mvn内置变量${project.version}，表示当前工程的version-->
-                        <image>jib/jib-example:${project.version}</image>
+                        <image>registry.cn-shenzhen.aliyuncs.com/zyy-demos/java:${project.version}</image>
+                        <auth>
+                            <username>test</username>
+                            <password>test</password>
+                        </auth>
                     </to>
                     <!--容器相关的属性-->
                     <container>
@@ -89,7 +93,7 @@
                             <!--build将镜像推送到远程仓库，仓库位置与镜像名字的前缀有关，一般是hub.docker.com，使用该参数时需要提前登录成功-->
                             <!--dockerBuild将镜像存入当前镜像仓库，该仓库是当前docker客户端可以连接的docker daemon，一般是指本地镜像仓库-->
                             <!--buildTar将镜像生成tar文件，保存在项目的target目录下，在任何docker环境执行 docker load -i xxx.tar即可导入到本地镜像仓库-->
-                            <goal>buildTar</goal>
+                            <goal>build</goal>
                         </goals>
                     </execution>
                 </executions>
