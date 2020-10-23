@@ -1,0 +1,99 @@
+#创建命名空间namespace为example
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: example
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-spring-boot-package
+  namespace: example
+spec:
+  #指定副本数量
+  replicas: 1
+  selector:
+    #匹配的标签跟下面对应
+    matchLabels:
+      app: example-spring-boot-package
+  template:
+    metadata:
+      labels:
+        app: example-spring-boot-package
+    spec:
+      containers:
+        - name: example-spring-boot-package
+          #镜像名称
+          image: imageName:1.0
+          #容器启动执行的命令
+          # command: ["/bin/sh", "-c", "./builder-start.sh"]
+          #拉取策略
+          imagePullPolicy: Never
+          #指定容器端口  name不能大于15
+          ports:
+            - containerPort: 18080
+              name: example-package
+          #心跳检测
+          livenessProbe:
+            #通过连接tcp端口来检测是否健康
+            tcpSocket:
+              port: 18080
+            #pod启动后多少秒进行第一次检测
+            initialDelaySeconds: 600
+            #间隔多少秒检测一次
+            periodSeconds: 30
+          resources:
+            #资源大小
+            requests:
+              memory: 2048Mi
+            #最大内存
+            limits:
+              memory: 2048Mi
+          #配置环境变量
+          env:
+            - name: TZ
+              value: Asia/Shanghai
+          #指定挂载卷
+          volumeMounts:
+            - name: log
+              #容器内的位置
+              mountPath: /usr/local/whale-traffic-xa/logs
+            - name: lib
+              mountPath: /usr/local/whale-traffic-xa/lib
+            - name: config
+              mountPath: /usr/local/whale-traffic-xa/config
+            - name: zoneinfo
+              mountPath: /usr/share/zoneinfo
+      #创建挂载卷
+      volumes:
+        - name: log
+          #宿主机的位置
+          hostPath:
+            path: logPath/logs
+        - name: lib
+          hostPath:
+            path: libPath/lib
+        - name: config
+          hostPath:
+            path: configPath/config
+        - name: zoneinfo
+          hostPath:
+            path: /usr/share/zoneinfo
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: example-spring-boot-package
+  namespace: example
+spec:
+  #nodePort 为代理端口到服务中
+  type: NodePort
+  selector:
+    app: example-spring-boot-package
+  ports:
+    - port: 18080  #service的的端口
+      targetPort: 18080 #容器内的端口
+      #暴露到宿主机的端口
+      nodePort: 18080
