@@ -50,7 +50,7 @@ stop_monitor() {
 }
 
 stop() {
-  stop_monitor
+  #stop_monitor
   stop_app
 }
 

@@ -17,12 +17,15 @@ PID=0
 if [[ -f $PIDFILE ]]; then
   PID=`cat $PIDFILE`
 fi
+if [ ! -d gclog  ];then
+  mkdir gclog
+fi
 
 CONF_DIR=./config
 LIB_DIR=./lib
 LIB_JARS=`ls $LIB_DIR|grep .jar|awk '{print "'$LIB_DIR'/"$0}'|tr "\n" ":"`
 JAVA_OPTS=" -Djava.net.preferIPv4Stack=true -Dfile.encoding=utf-8 -Dlogging.config=$CONF_DIR/logback-spring.xml"
-JAVA_MEM_OPTS=" -server -Xms2g -Xmx2g -XX:SurvivorRatio=2 -XX:+UseParallelGC "
+JAVA_MEM_OPTS=" -server -Xms2g -Xmx2g -XX:SurvivorRatio=6 -XX:+UseParallelGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:./gclog/gc-%t.log"
 
 #START_CMD=$BIN_DIR/$BIN_FILE
 START_CMD="java $JAVA_OPTS $JAVA_MEM_OPTS -classpath $CONF_DIR:$LIB_JARS $MAIN_CLASS"
@@ -68,7 +71,7 @@ start_monitor() {
     echo "$(date '+%Y-%m-%d %T') $BIN_FILE started. monitor pid $!" >> $MONITOR_LOG
   fi
   MONITOR_PID=$!
-  echo "monitor pid $MAIN_CLASS_NAME-$!"
+  #echo "monitor pid $MAIN_CLASS_NAME-$!"
   echo $! > $MONITOR_PIDFILE
 }
 
